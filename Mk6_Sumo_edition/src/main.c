@@ -6,6 +6,7 @@
 #include <SparkFun_TB6612.h>
 
 // Sharp sensor library https://github.com/guillaume-rico/SharpIR
+// Remember to reduce the number of measures for the median filter default = 25
 #include <SharpIR.h>
 
 // Motor pins
@@ -33,10 +34,11 @@ Motor motor1 = Motor(AIN1, AIN2, PWMA, offsetA, STBY);
 Motor motor2 = Motor(BIN1, BIN2, PWMB, offsetB, STBY);
 
 // Sensor declaration
-SharpIR left_distance(distance_i, 1080);
-SharpIR center_distance(distance_c, 1080);
-SharpIR right_distance(distance_r, 1080);
+SharpIR left_sensor(distance_i, 1080);
+SharpIR center_sensor(distance_c, 1080);
+SharpIR right_sensor(distance_r, 1080);
 
+// Sensor variables
 
 
 void setup()
