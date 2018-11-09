@@ -44,6 +44,9 @@ int distance_r = 0;
 int floor_left = 0;
 int floor_right = 0;
 
+bool sw1 = false;
+bool sw2 = false;
+
 int fdistance_c = 0; // filtered distance_c
 int fdistance_l = 0; //
 int fdistance_r = 0;
@@ -59,6 +62,8 @@ void read_sensors()
   distance_r = right_sensor.distance();
   floor_left = analogRead(floor_i);
   floor_right = analogRead(floor_d);
+  sw1 = digitalRead(12);
+  sw1 = digitalRead(4);
 }
 
 int distance_filter(int filtered_measure)
@@ -85,7 +90,12 @@ void setup()
 
   Serial.begin(115200);
 
+  pinMode(2, INPUT_PULLUP);
+  pinMode(4, INPUT_PULLUP);
 
+  // 00 frente
+  // 01 derecha
+  // 10 izquierda
 }
 
 void sensor_serial_print()
@@ -94,9 +104,9 @@ void sensor_serial_print()
   Serial.print(" ");
   Serial.print(floor_left);
   Serial.print(" ");
-  Serial.print(floor_right);
+  Serial.print(sw1);
   Serial.print(" ");
-  Serial.print(fdistance_r);
+  Serial.print(sw2);
   Serial.println(" ");
 }
 
