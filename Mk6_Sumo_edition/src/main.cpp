@@ -44,12 +44,17 @@ int distance_r = 0;
 int floor_left = 0;
 int floor_right = 0;
 
-bool sw1 = false;
-bool sw2 = false;
+bool sw1 = true;
+bool sw2 = true;
 
 int fdistance_c = 0; // filtered distance_c
 int fdistance_l = 0; //
 int fdistance_r = 0;
+
+// System variables
+
+bool ultimo_giro = false;
+bool first_exec = true;
 
 // Sensor Values
 #define WHITE_LINE 500    // value of the readings above white border the higher, the whitest
@@ -62,8 +67,8 @@ void read_sensors()
   distance_r = right_sensor.distance();
   floor_left = analogRead(floor_i);
   floor_right = analogRead(floor_d);
-  sw1 = digitalRead(12);
   sw1 = digitalRead(4);
+  sw2 = digitalRead(2);
 }
 
 int distance_filter(int filtered_measure)
@@ -92,6 +97,8 @@ void setup()
 
   pinMode(2, INPUT_PULLUP);
   pinMode(4, INPUT_PULLUP);
+
+  delay(3800);
 
   // 00 frente
   // 01 derecha
@@ -125,31 +132,115 @@ void search_rot(int rotation_speed, bool direction)
 
 void loop()
 {
+    int cont_3 = 0;
+  read_sensors();
+  filter_sensors();
+  sensor_serial_print();
+
+if (first_exec == true)
+{
+  if((sw1 == true)&&(sw2 == true))
+  {
+
+    for(cont_3=0;cont_3<400;cont_3++)
+      {
+        motor1.drive(250);
+        motor2.drive(250);
+        delay(1);
+      }
+    }
+
+if((sw1 == true)&&(sw2 == false))
+      {
+ultimo_giro = true;
+        for(cont_3=0;cont_3<170;cont_3++)
+          {
+            motor1.drive(250);
+            motor2.drive(-250);
+            delay(1);
+          }
+
+          for(cont_3=0;cont_3<150;cont_3++)
+            {
+              motor1.drive(250);
+              motor2.drive(250);
+              delay(1);
+            }
+      }
+
+if((sw1 == false)&&(sw2 == true))
+        {
+ultimo_giro = false;
+          for(cont_3=0;cont_3<170;cont_3++)
+            {
+              motor1.drive(-250);
+              motor2.drive(250);
+              delay(1);
+            }
+
+            for(cont_3=0;cont_3<150;cont_3++)
+              {
+                motor1.drive(250);
+                motor2.drive(250);
+                delay(1);
+              }
+        }
+
+  first_exec = false;
+}
 read_sensors();
 filter_sensors();
 sensor_serial_print();
 
 //MIRAMOS EL SUELO
 
-if((floor_left > WHITE_LINE)||(floor_left > WHITE_LINE))
+if(((floor_left > WHITE_LINE)||(floor_right > WHITE_LINE)))
 {
+  int counter_2 = 0;
+  bool whiteclose = false;
 
-int counter_2 = 0;
-bool whiteclose = false;
-for(counter_2 = 0; counter_2 < 300 ; counter_2++)
+if((floor_left > WHITE_LINE)&&(  floor_right < WHITE_LINE ))
+{
+  for(counter_2 = 0; counter_2 < 150 ; counter_2++)
+    {
+      read_sensors();
+      filter_sensors();
+      if(whiteclose == false)
+         {
+           motor1.drive(-100);
+           motor2.drive(-210);
+         }
+  }
+}
+
+if((floor_left < WHITE_LINE)&&(  floor_right > WHITE_LINE ))
+{
+  for(counter_2 = 0; counter_2 < 150 ; counter_2++)
+    {
+      read_sensors();
+      filter_sensors();
+      if(whiteclose == false)
+         {
+           motor1.drive(-210);
+           motor2.drive(-100);
+         }
+  }
+}
+
+for(counter_2 = 0; counter_2 < 100 ; counter_2++)
   {
     read_sensors();
     filter_sensors();
     if(whiteclose == false)
        {
-         motor1.drive(-100);
-         motor2.drive(-100);
+         motor1.drive(-150);
+         motor2.drive(-150);
        }
   }
-
+/*
 for(counter_2 = 0; counter_2 < 1000 ; counter_2++)
     {
-      search_rot(100, true);
+      search_rot(140, true);
       read_sensors();
       filter_sensors();
       if((fdistance_l < 30)||(fdistance_l < 30))
@@ -158,7 +249,7 @@ for(counter_2 = 0; counter_2 < 1000 ; counter_2++)
       }
       counter_2++;
     }
-
+*/
 }
 
 
@@ -168,23 +259,25 @@ if((fdistance_l < 35)||(fdistance_l < 35))
 {
   if(fdistance_r > fdistance_l + 4)
   {
-    motor1.drive(100);
-    motor2.drive(180);
+    motor1.drive(130);
+    motor2.drive(200);
+    ultimo_giro = false;
   }else{
         if(fdistance_l > fdistance_r + 4)
           {
-          motor1.drive(180);
-          motor2.drive(100);
+          motor1.drive(200);
+          motor2.drive(130);
+          ultimo_giro = true;
         }else
           {
-            motor1.drive(100);
-            motor2.drive(100);
+            motor1.drive(200);
+            motor2.drive(200);
           }
 
       }
 }else
   {
-    search_rot(100, true);
+    search_rot(130, ultimo_giro);
   }
 
 //sensor_serial_print();
